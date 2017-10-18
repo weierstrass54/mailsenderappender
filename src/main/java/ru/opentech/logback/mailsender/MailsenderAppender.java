@@ -22,16 +22,27 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
     private static final String DEFAULT_SUBJECT_PATTERN = "%logger{20} - %m";
     private static final int DEFAULT_PRIORITY = 10;
 
+    // соединения к СУБД (из пула или из драйвера)
     private ConnectionSource connectionSource;
 
+    // шаблон писем
     private Layout<ILoggingEvent> layout;
+
+    // шаблон темы
     private Layout<ILoggingEvent> subjectLayout;
+
+    // источник письма (см. OtMailsender)
     private String source;
+    // приоритет письма (см. OtMailSender)
     private int priority;
 
+    // строка темы (шаблон или просто строка)
     private String subjectStr;
 
+    // шаблон адресатов
     private List<PatternLayoutBase<ILoggingEvent>> toPatternLayoutList = new ArrayList<>();
+
+    // адресант
     private String from;
 
     @Override
@@ -60,6 +71,7 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
             connection.setAutoCommit( false );
 
             int bodyId;
+            // синхронизируемся здесь, чтобы разные потоки не перехватывали bodyId
             synchronized( this ) {
                 bodyId = insertMailBody( connection, event );
             }
@@ -72,6 +84,11 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         }
     }
 
+    /**
+     * Создание шаблона темы письма из заданного в настройках
+     * @param subjectStr шаблон темы письма в виде строки
+     * @return шаблон темы для logback
+     */
     private Layout<ILoggingEvent> buildSubjectLayout( String subjectStr ) {
         if( subjectStr == null ) {
             subjectStr = DEFAULT_SUBJECT_PATTERN;
@@ -84,6 +101,13 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         return patternLayout;
     }
 
+    /**
+     * Добавление в СУБД тела письма
+     * @param connection соединение к СУБД
+     * @param event событие лога
+     * @return идентификатор тела письма
+     * @throws SQLException в случае ошибки
+     */
     private int insertMailBody( Connection connection, ILoggingEvent event ) throws SQLException {
         ResultSet resultSet = null;
         try(
@@ -107,6 +131,13 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         }
     }
 
+    /**
+     * Добавление заголовка письма в СУБД
+     * @param connection соединение к СУБД
+     * @param bodyId идентификатор тела письма
+     * @param event событие лога
+     * @throws SQLException в случае ошибки
+     */
     private void insertMailHeader( Connection connection, int bodyId, ILoggingEvent event ) throws SQLException {
         try(
             PreparedStatement statement = connection.prepareStatement(
@@ -127,6 +158,11 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         }
     }
 
+    /**
+     * Получение адресатов из шаблона, указанного в настройках
+     * @param event событие лога
+     * @return список почтовых ящиков, на которые надо отправить письмо
+     */
     private List<InternetAddress> parseAddress( ILoggingEvent event ) {
         List<InternetAddress> addresses = new ArrayList<>();
         for( PatternLayoutBase<ILoggingEvent> email : toPatternLayoutList ) {
@@ -146,6 +182,11 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         return addresses;
     }
 
+    /**
+     * Создание строки темы письма с использованием шаблона
+     * @param event событие лога
+     * @return тема в виде строки, построенной по шаблону
+     */
     private String buildSubject( ILoggingEvent event ) {
         String subject = "Тема не указана";
         if( subjectLayout != null ) {
@@ -159,6 +200,11 @@ public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent
         return subject;
     }
 
+    /**
+     * Формирование тела письма из события лога
+     * @param event событие лога
+     * @return тело письма в виде строки
+     */
     private String buildBody( ILoggingEvent event ) {
         StringBuilder buffer = new StringBuilder();
 

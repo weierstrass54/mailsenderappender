@@ -20,7 +20,7 @@ public class MailsenderTest {
 
     @Test
     public void test() throws SQLException {
-        log.error( "NASTY ERROR HERE!" );
+        log.error( "NASTY ERROR HERE!", new Exception( "Some nasty reason" ) );
 
         Connection connection = null;
         PreparedStatement statement = null;
