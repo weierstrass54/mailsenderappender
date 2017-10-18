@@ -1,0 +1,28 @@
+<configuration debug="false" scan="true" scanPeriod="1 minutes">
+    <timestamp key="days" datePattern="yyyy-MM-dd"/>
+    <logger name="test" level="INFO"/>
+
+    <appender name="EMAIL" class="ru.opentech.logback.mailsender.MailsenderAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <connectionSource class="ch.qos.logback.core.db.DataSourceConnectionSource">
+            <dataSource class="com.zaxxer.hikari.HikariDataSource">
+                <driverClass>com.impossibl.postgres.jdbc.PGDriver</driverClass>
+                <jdbcUrl>jdbc:pgsql://192.168.128.233:5432/test</jdbcUrl>
+                <maxPoolSize>3</maxPoolSize>
+                <username>postgres</username>
+                <password>mysqld</password>
+            </dataSource>
+        </connectionSource>
+        <to>v.kibalov@e2e4online.ru</to>
+        <from>dc@e2e4online.ru</from>
+        <subject>nasty error: %m</subject>
+        <layout class="ch.qos.logback.classic.html.HTMLLayout"/>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="EMAIL" />
+    </root>
+
+</configuration>

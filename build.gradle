@@ -15,5 +15,7 @@ dependencies {
                 "javax.mail:mail:1.4.7"
     testCompile "junit:junit:4.12",
                 "ch.qos.logback:logback-classic:1.2.3",
-                "javax.mail:mail:1.4.7"
+                "javax.mail:mail:1.4.7",
+                "com.impossibl.pgjdbc-ng:pgjdbc-ng:0.7.1",
+                "com.zaxxer:HikariCP:2.7.2"
 }

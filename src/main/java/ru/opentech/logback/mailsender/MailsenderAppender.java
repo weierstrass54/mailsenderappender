@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
+public class MailsenderAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     private static final String DEFAULT_SUBJECT_PATTERN = "%logger{20} - %m";
     private static final int DEFAULT_PRIORITY = 10;
@@ -40,7 +40,7 @@ public abstract class MailsenderAppender extends UnsynchronizedAppenderBase<ILog
             throw new IllegalStateException( "Не указан connectionSource для MailsenderAppender" );
         }
         if( from == null ) {
-            throw new IllegalStateException( "Не указан адрес отправления для MailsenderAppender" );
+            throw new IllegalStateException( "Не указан адресант для MailsenderAppender" );
         }
         subjectLayout = buildSubjectLayout( subjectStr );
         if( priority == 0 ) {
@@ -139,7 +139,7 @@ public abstract class MailsenderAppender extends UnsynchronizedAppenderBase<ILog
                 addresses.addAll( Arrays.asList( buffer ) );
             }
             catch( AddressException e ) {
-                addError( "Не удалось распознать email получателя", e );
+                addError( "Не удалось распознать email адресата", e );
                 return addresses;
             }
         }
